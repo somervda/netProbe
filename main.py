@@ -2,6 +2,7 @@
 import time
 # import io
 # import sys
+import uping
 
 import network
 import machine
@@ -53,3 +54,7 @@ def connect():
 if __name__ == '__main__':
     connect()
     print(net_if.ifconfig())
+    pingResult = uping.ping("google.com",size=200,quiet=False)
+    print("rtl:",pingResult[0]," ttl:",pingResult[1]," size:",pingResult[2])
+    print("")
+    print("")
