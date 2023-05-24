@@ -54,7 +54,8 @@ def connect():
 if __name__ == '__main__':
     connect()
     print(net_if.ifconfig())
-    pingResult = uping.ping("google.com",size=200,quiet=False)
-    print("rtl:",pingResult[0]," ttl:",pingResult[1]," size:",pingResult[2])
+    pingResult = uping.ping("192.168.1.117", size=16)
+    print("rtl:", pingResult[0], " ttl:",
+          pingResult[1], " size:", pingResult[2])
     print("")
     print("")

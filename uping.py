@@ -23,9 +23,9 @@ def checksum(data):
 
 
 def getRandomString(size):
-    import urandom
+    import random
     printableCharacters = 'abcdefghijklmnopqrstuvwxyz1234567890ABCBEFHIJKLMNOPQRSTUVWXYZ'
-    return ''.join(urandom.choice(printableCharacters) for x in range(size))
+    return ''.join(random.choice(printableCharacters) for x in range(size))
 
 
 def ping(host, size=16, timeout=5000, quiet=True):
@@ -33,7 +33,7 @@ def ping(host, size=16, timeout=5000, quiet=True):
     import uctypes
     import usocket
     import ustruct
-    import urandom
+    import random
     import gc
 
     gc.collect()
@@ -48,12 +48,14 @@ def ping(host, size=16, timeout=5000, quiet=True):
     # 16 bytes seem to be the minimum for relable timings from experimenting
     assert size >= 16, "pkt size too small, must be > 16"
 
+    assert size <= 1480, "pkt size too large, must be less then 1480"
+
     # prepare packet
 
     # Use a randomized string so that
     # network data compression does not impact ping times
-    # pkt = getRandomString(size).encode()
-    pkt = b'Q'*size
+    pkt = getRandomString(size).encode()
+    # pkt = b'Q'*size
 
     # Build the packet header
     # See http://www.networksorcery.com/enp/protocol/icmp/msg8.htm for details
@@ -69,7 +71,7 @@ def ping(host, size=16, timeout=5000, quiet=True):
     h.type = 8  # ICMP_ECHO_REQUEST
     h.code = 0
     h.checksum = 0
-    h.id = urandom.randint(0, 65535)
+    h.id = random.randint(0, 65535)
     h.seq = 1
 
     # init socket
@@ -91,7 +93,7 @@ def ping(host, size=16, timeout=5000, quiet=True):
         # Successful packet send, Wait for ping to respond
         while True:
             try:
-                resp = sock.recv(8000)
+                resp = sock.recv(1512)
             except Exception as err:
                 not quiet and print("uping recv error", err)
                 break

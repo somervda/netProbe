@@ -40,7 +40,7 @@ class NetConfig:
                 if not type(self.useWiFi) is bool:
                     raise Exception(
                         "useWifi must be boolean in netconfig.json")
-                if self.wifiPassword == "" or self.wifiSSID == "":
+                if self.useWiFi and (self.wifiPassword == "" or self.wifiSSID == ""):
                     raise Exception(
                         "Missing wifiSSID or wifiPassword settings in netconfig.json")
             else:
