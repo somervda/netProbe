@@ -11,6 +11,7 @@ import machine
 import ntptime
 
 from netconfig import NetConfig
+from hosts import Hosts
 
 import shared
 
@@ -65,5 +66,9 @@ if __name__ == '__main__':
         shared.hasSDCard = False
     connect()
     print(net_if.ifconfig())
+    hosts = Hosts()
+    print("maxId:", hosts.maxId)
+    print("Host2:", hosts.getHost(2))
+
     print("")
     print("")
