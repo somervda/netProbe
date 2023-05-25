@@ -1,10 +1,11 @@
 import json
 import os
-import errno
+# import errno
+import shared
 
 
 class NetConfig:
-    CONFIG_FILE = "netconfig.json"
+
     useWiFi: bool
     IP = ""
     gateway = ""
@@ -14,8 +15,11 @@ class NetConfig:
     wifiPassword = ""
     ntp = ""
     dhcp: bool
+    CONFIG_FILE = "/netconfig.json"
 
     def __init__(self):
+        if shared.hasSDCard:
+            self.CONFIG_FILE = "/sd" + self.CONFIG_FILE
         self.getConfig()
 
     def file_or_dir_exists(self, filename):

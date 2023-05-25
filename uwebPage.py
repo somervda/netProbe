@@ -15,7 +15,7 @@ def webPage(target, match,  quiet=True):
         resp = wCli.GetResponse()
         matched = False
         if resp.IsSuccess():
-            not quiet and print("webPage IsSussess")
+            not quiet and print("webPage IsSuccess")
             # Only process first 1000 bytes
             if not resp.IsClosed():
                 x = resp.ReadContentInto(buf)

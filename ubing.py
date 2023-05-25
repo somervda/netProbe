@@ -8,29 +8,29 @@ import utime
 
 def getLowestPing(host, samples, size, timeout=5000, quiet=False):
     # Make a list containing the ping results for each of the ping samples
-    pings = []
+    pingResults = []
     failCnt = 0
     for x in range(samples):
-        ping = ping.ping(host, size, timeout, quiet=quiet)
-        if (ping == None):
+        pingResult = uping.ping(host, size, timeout, quiet=quiet)
+        if (pingResult == None):
             failCnt += 1
             if (failCnt >= 2):
                 return None
-        if (ping != None):
-            pings.append(ping)
+        if (pingResult != None):
+            pingResults.append(pingResult)
         not quiet and print(
-            "getLowestPing host %s size %u sample# %u result: " % (host, size, x), ping)
+            "getLowestPing host %s size %u sample# %u result: " % (host, size, x), pingResult)
         utime.sleep_ms(25)
     # Review results for number of successful pings and get the lowest latency
     minPing = 9999
 
-    for ping in pings:
-        if (minPing > ping[0]):
-            minPing = ping[0]
+    for pingResult in pingResults:
+        if (minPing > pingResult[0]):
+            minPing = pingResult[0]
     return minPing
 
 
-def bing(host, samples=3, maxSize=1460, timeout=5000, quiet=False, loopBackAdjustment=True):
+def bing(host, samples=3, maxSize=1460, timeout=5000, quiet=True, loopBackAdjustment=True):
     # perform required number of ping samples to the host using 16byte and maxsize packets
     # also get esp32 overhead time for the same pings to loopback (no network times)
     # calculate and return bandwidth (bps) and latency (ms) based on the ping samples

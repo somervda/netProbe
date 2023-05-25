@@ -1,8 +1,10 @@
-# import os
+import os
 import time
 # import io
 # import sys
 import uping
+import ubing
+import uwebPage
 
 import network
 import machine
@@ -10,12 +12,14 @@ import ntptime
 
 from netconfig import NetConfig
 
+import shared
+
 
 def connect():
+    netConfig = NetConfig()
     global net_if
     led = machine.Pin(33, machine.Pin.OUT)
     led.on()
-    netConfig = NetConfig()
     if netConfig.useWiFi:
         net_if = network.WLAN(network.STA_IF)
     else:
@@ -52,10 +56,14 @@ def connect():
 
 
 if __name__ == '__main__':
+    # Check if we have a SD card plugged in
+    try:
+        sd = machine.SDCard(slot=1, width=1, sck=machine.Pin(
+            14), miso=machine.Pin(2), mosi=machine.Pin(15))
+        os.mount(sd, '/sd')
+    except OSError:
+        shared.hasSDCard = False
     connect()
     print(net_if.ifconfig())
-    pingResult = uping.ping("192.168.1.117", size=16)
-    print("rtl:", pingResult[0], " ttl:",
-          pingResult[1], " size:", pingResult[2])
     print("")
     print("")
