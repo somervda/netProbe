@@ -1,6 +1,6 @@
 [
     {
-        "name": "lupincorp.com",
+        "address": "lupincorp.com",
         "id": 1,
         "description": "Davids main site",
         "ping": {
@@ -20,7 +20,7 @@
         }
     },
     {
-        "name": "solar.home",
+        "address": "solar.home",
         "id": 2,
         "description": "My solar shed",
         "ping": {
@@ -40,7 +40,7 @@
         }
     },
     {
-        "name": "192.168.1.117",
+        "address": "192.168.1.117",
         "id": 3,
         "description": "Davids development box",
         "ping": {

@@ -68,11 +68,9 @@ if __name__ == '__main__':
     print(net_if.ifconfig())
     hosts = Hosts()
     print("maxId:", hosts.maxId)
-    print("Host2:", hosts.getHost(2))
-    hosts.removeHost(6)
     newHost = {
-        "name": "192.168.1.1",
-        "description":"Fios Router4",
+        "address": "192.168.1.1",
+        "description": "Fios Router2",
         "ping": {
             "active": True,
             "intervalMinutes": 5
@@ -82,7 +80,8 @@ if __name__ == '__main__':
             "intervalMinutes": 5
         }
     }
-    hosts.addHost(newHost )
+    hosts.addHost(newHost)
+    print("Host4:", hosts.getHost(4))
 
     print("")
     print("")

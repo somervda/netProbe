@@ -20,9 +20,10 @@ class Hosts:
             return True
         except OSError:
             return False
-        
+
     def setMaxId(self):
         # Find the maximum id
+        self.maxId = 0
         for host in self.hosts:
             if host["id"] > self.maxId:
                 self.maxId = host["id"]
@@ -35,21 +36,20 @@ class Hosts:
             self.hosts = json.loads(hostsFile.read())
             self.setMaxId()
 
-
     def getHost(self, id):
         for host in self.hosts:
             if host["id"] == id:
                 return(host)
         return {}
 
-    def updateHost(self, newHost):
+    def updateHost(self, updatedHost):
+        # Updated a host based on the updated host's id
         for host in self.hosts:
-            if host["id"] == newHost["id"]:
+            if host["id"] == updatedHost["id"]:
                 self.hosts.remove(host)
-                self.hosts.append(newHost)
+                self.hosts.append(updatedHost)
                 self.setMaxId()
                 self.writeHosts()
-
 
     def removeHost(self, id):
         for host in self.hosts:
@@ -58,13 +58,11 @@ class Hosts:
                 self.setMaxId()
                 self.writeHosts()
 
-
     def addHost(self, host):
         host["id"] = self.maxId + 1
         self.hosts.append(host)
         self.setMaxId()
         self.writeHosts()
-
 
     def writeHosts(self):
         with open(self.HOSTS_FILE, "w") as hostsFile:
