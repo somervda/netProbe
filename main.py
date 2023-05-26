@@ -69,6 +69,20 @@ if __name__ == '__main__':
     hosts = Hosts()
     print("maxId:", hosts.maxId)
     print("Host2:", hosts.getHost(2))
+    hosts.removeHost(6)
+    newHost = {
+        "name": "192.168.1.1",
+        "description":"Fios Router4",
+        "ping": {
+            "active": True,
+            "intervalMinutes": 5
+        },
+        "bing": {
+            "active": False,
+            "intervalMinutes": 5
+        }
+    }
+    hosts.addHost(newHost )
 
     print("")
     print("")
