@@ -4,15 +4,19 @@ import shared
 
 
 class Hosts:
-
+    # hosts data
     HOSTS_FILE = "/hosts.json"
     hosts = any
     maxId = 0
+    # host scheduling
+    lastHostTested = 0
+    hostTests = []
 
     def __init__(self):
         if shared.hasSDCard:
             self.HOSTS_FILE = "/sd" + self.HOSTS_FILE
         self.getHosts()
+        self.buildHostTests()
 
     def file_or_dir_exists(self, filename):
         try:
@@ -28,6 +32,14 @@ class Hosts:
             if host["id"] > self.maxId:
                 self.maxId = host["id"]
 
+    def buildHostTests(self):
+        # Build a new host tests array based on hosts data
+        self.hostsTests = []
+        for host in self.hosts:
+            hostTests = {"id": host["id"],
+                         "lastPing": 0, "lastBing": 0, "lastWeb": 0}
+            self.hostsTests.append(hostTests)
+
     def getHosts(self):
         if not self.file_or_dir_exists(self.HOSTS_FILE):
             raise Exception("File required: " + self.HOSTS_FILE)
@@ -42,6 +54,12 @@ class Hosts:
                 return(host)
         return {}
 
+    def getHostTests(self, id):
+        for hostTests in self.hostsTests:
+            if hostTests["id"] == id:
+                return(hostTests)
+        return {}
+
     def updateHost(self, updatedHost):
         # Updated a host based on the updated host's id
         for host in self.hosts:
@@ -51,18 +69,46 @@ class Hosts:
                 self.setMaxId()
                 self.writeHosts()
 
+    def updateHostTests(self, updatedHostTests):
+        # Updated a hostTests based on the updated host's id
+        for hostTests in self.hostsTests:
+            if hostTests["id"] == updatedHostTests["id"]:
+                self.hostsTests.remove(hostTests)
+                self.hostsTests.append(updatedHostTests)
+
+    def findNextHostToTest(self):
+        candidateNextID = self.lastHostTested
+        for hostTests in self.hostsTests:
+            if hostTests["id"] > self.lastHostTested:
+                # We have a candidate next id
+                candidateNextID = hostTests["id"]
+                if hostTests["id"] < candidateNextID:
+                    # Found a better candidate
+                    candidateNextID = hostTests["id"]
+        if candidateNextID == self.lastHostTested:
+            self.lastHostTested = 0
+        else:
+            self.lastHostTested = candidateNextID
+
     def removeHost(self, id):
         for host in self.hosts:
             if host["id"] == id:
                 self.hosts.remove(host)
                 self.setMaxId()
                 self.writeHosts()
+        # Also update hostsTests
+        for hostTests in self.hostsTests:
+            if hostTests["id"] == id:
+                self.hostsTests.remove(hostTests)
 
     def addHost(self, host):
         host["id"] = self.maxId + 1
         self.hosts.append(host)
         self.setMaxId()
         self.writeHosts()
+        # Also update hostsTests
+        self.hostsTests.append(
+            {"id": self.maxId, "lastPing": 0, "lastBing": 0, "lastWeb": 0})
 
     def writeHosts(self):
         with open(self.HOSTS_FILE, "w") as hostsFile:
