@@ -15,6 +15,8 @@ from hosts import Hosts
 
 import shared
 
+hosts : any
+
 
 def connect():
     netConfig = NetConfig()
@@ -55,6 +57,14 @@ def connect():
         time.sleep(.1)
         led.off()
 
+def sheduler():
+    print("hostsTests:", hosts.hostsTests)
+    hosts.lastHostTested=3
+    print(hosts.lastHostTested)
+    hosts.findNextHostToTest()
+    print("hostsTests after sort:", hosts.hostsTests)
+    print(hosts.lastHostTested)
+
 
 if __name__ == '__main__':
     # Check if we have a SD card plugged in
@@ -67,21 +77,11 @@ if __name__ == '__main__':
     connect()
     print(net_if.ifconfig())
     hosts = Hosts()
-    print("maxId:", hosts.maxId)
-    newHost = {
-        "address": "192.168.1.1",
-        "description": "Fios Router2",
-        "ping": {
-            "active": True,
-            "intervalMinutes": 5
-        },
-        "bing": {
-            "active": False,
-            "intervalMinutes": 5
-        }
-    }
-    hosts.addHost(newHost)
-    print("Host4:", hosts.getHost(4))
+
+    
+    sheduler()
+
+
 
     print("")
     print("")

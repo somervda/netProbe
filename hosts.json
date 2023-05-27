@@ -1,7 +1,7 @@
 [
     {
         "address": "lupincorp.com",
-        "id": 1,
+        "id": 3,
         "description": "Davids main site",
         "ping": {
             "active": true,
@@ -20,8 +20,21 @@
         }
     },
     {
-        "address": "solar.home",
+        "address": "192.168.1.117",
         "id": 2,
+        "description": "Davids development box",
+        "ping": {
+            "active": true,
+            "intervalMinutes": 5
+        },
+        "bing": {
+            "active": false,
+            "intervalMinutes": 5
+        }
+    },
+    {
+        "address": "solar.home",
+        "id": 1,
         "description": "My solar shed",
         "ping": {
             "active": true,
@@ -37,19 +50,6 @@
             "url": "/",
             "match": "Solarui",
             "https": false
-        }
-    },
-    {
-        "address": "192.168.1.117",
-        "id": 3,
-        "description": "Davids development box",
-        "ping": {
-            "active": true,
-            "intervalMinutes": 5
-        },
-        "bing": {
-            "active": false,
-            "intervalMinutes": 5
         }
     }
 ]
