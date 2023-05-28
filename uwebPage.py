@@ -10,8 +10,10 @@ def webPage(target, match,  quiet=True):
     wCli = MicroWebCli(target)
     not quiet and print('GET %s' % wCli.URL)
     try:
+        not quiet and print('wCli.OpenRequest()')
         wCli.OpenRequest()
         buf = memoryview(bytearray(1024))
+        not quiet and print('wCli.GetResponse()')
         resp = wCli.GetResponse()
         matched = False
         if resp.IsSuccess():
@@ -21,6 +23,8 @@ def webPage(target, match,  quiet=True):
                 x = resp.ReadContentInto(buf)
                 if x < len(buf):
                     buf = buf[:x]
+                # Need to check that content can be read, currently can not read gzip content
+                # need to add gzip content code
                 contentReadable = True
                 try:
                     testStr = str(bytearray(buf), "utf-8")
