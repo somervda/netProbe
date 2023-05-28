@@ -76,28 +76,27 @@ class Hosts:
                 self.hostsTests.remove(hostTests)
                 self.hostsTests.append(updatedHostTests)
 
-    def getId(self,obj):
+    def getId(self, obj):
         return obj["id"]
 
     def findNextHostToTest(self):
         self.hostsTests.sort(key=self.getId)
-        nextFound=False
+        nextFound = False
         for hostTests in self.hostsTests:
             if hostTests["id"] > self.lastHostTested:
-                nextFound=True
-                self.lastHostTested=hostTests["id"]
+                nextFound = True
+                self.lastHostTested = hostTests["id"]
                 break
         if not nextFound:
             for hostTests in self.hostsTests:
                 if hostTests["id"] > 0:
-                    nextFound=True
-                    self.lastHostTested=hostTests["id"] 
+                    nextFound = True
+                    self.lastHostTested = hostTests["id"]
                     break
         if not nextFound:
             # Not really needed
-            self.lastHostTested=0
-
-
+            self.lastHostTested = 0
+        return self.lastHostTested
 
     def removeHost(self, id):
         for host in self.hosts:

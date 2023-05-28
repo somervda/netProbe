@@ -21,9 +21,18 @@ def webPage(target, match,  quiet=True):
                 x = resp.ReadContentInto(buf)
                 if x < len(buf):
                     buf = buf[:x]
-                # not quiet and print(str(bytearray(buf), "utf-8"))
-                if match == "" or match in str(bytearray(buf), "utf-8"):
-                    matched = True
+                contentReadable = True
+                try:
+                    testStr = str(bytearray(buf), "utf-8")
+                except:
+                    contentReadable = False
+                not quiet and print(str(bytearray(buf), "utf-8"))
+                if contentReadable:
+                    if match == "" or match in str(bytearray(buf), "utf-8"):
+                        matched = True
+                else:
+                    # Cant do a match on zipped content
+                    matched = False
             not quiet and print(
                 'webPage GET success with "%s" content type' % resp.GetContentType())
         else:
@@ -34,4 +43,4 @@ def webPage(target, match,  quiet=True):
         not quiet and print("matched:", matched)
         return t_elapsed, matched, resp.GetStatusCode()
     except:
-        return 0, False, -1
+        return None

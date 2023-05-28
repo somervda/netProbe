@@ -15,7 +15,7 @@ from hosts import Hosts
 
 import shared
 
-hosts : any
+hosts: Hosts
 
 
 def connect():
@@ -57,13 +57,63 @@ def connect():
         time.sleep(.1)
         led.off()
 
-def sheduler():
-    print("hostsTests:", hosts.hostsTests)
-    hosts.lastHostTested=3
-    print(hosts.lastHostTested)
-    hosts.findNextHostToTest()
-    print("hostsTests after sort:", hosts.hostsTests)
-    print(hosts.lastHostTested)
+
+def scheduler():
+    global hosts
+    # Perform scheduling of tests on next host
+    nextHostToTest = hosts.findNextHostToTest()
+    host = hosts.getHost(nextHostToTest)
+    hostTests = hosts.getHostTests(nextHostToTest)
+    if "ping" in host:
+        web = host["ping"]
+        # We have ping info
+        if web["active"]:
+            if hostTests["lastPing"] + (web["intervalMinutes"] * 60) < time.time():
+                hostTests["lastPing"] = time.time()
+                # We are due to run the ping test
+                webResult = uping.ping(host["address"], size=16)
+                if webResult == None:
+                    print("Ping failed to ", host["address"])
+                else:
+                    print("Ping ", host["address"], "rtl:", webResult[0], " ttl:",
+                          webResult[1], " size:", webResult[2])
+
+    if "bing" in host:
+        web = host["bing"]
+        # We have ping info
+        if web["active"]:
+            if hostTests["lastBing"] + (web["intervalMinutes"] * 60) < time.time():
+                hostTests["lastBing"] = time.time()
+                # We are due to run the bing test
+                webResult = ubing.bing(
+                    host["address"], maxSize=1400, quiet=True)
+                if webResult == None:
+                    print("Bing failed to ", host["address"])
+                else:
+                    print("Bing ", host["address"], " bps:", webResult[0], " rtl:",
+                          webResult[1],)
+    if "web" in host:
+        web = host["web"]
+        # We have ping info
+        if web["active"]:
+            if hostTests["lastWeb"] + (web["intervalMinutes"] * 60) < time.time():
+                hostTests["lastWeb"] = time.time()
+                # We are due to run the web test
+                if web["https"]:
+                    target = "https://"
+                else:
+                    target = "http://"
+                target += host["address"] + web["url"]
+                webResult = uwebPage.webPage(target, web["match"], quiet=True)
+                if webResult == None:
+                    print("Web failed to ", target)
+                else:
+                    print("Web ", target, " rtl:", webResult[0], " match:",
+                          webResult[1], " status:", webResult[2])
+    # Update the last update times
+    hosts.updateHostTests(hostTests)
+    print(hosts.hostsTests)
+    time.sleep(30)
 
 
 if __name__ == '__main__':
@@ -78,10 +128,9 @@ if __name__ == '__main__':
     print(net_if.ifconfig())
     hosts = Hosts()
 
-    
-    sheduler()
-
-
+    for loop in range(30):
+        print("   * ", loop, " *")
+        scheduler()
 
     print("")
     print("")

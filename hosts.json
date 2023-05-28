@@ -28,14 +28,14 @@
             "intervalMinutes": 5
         },
         "bing": {
-            "active": false,
-            "intervalMinutes": 5
+            "active": true,
+            "intervalMinutes": 10
         }
     },
     {
-        "address": "solar.home",
+        "address": "garden.home",
         "id": 1,
-        "description": "My solar shed",
+        "description": "My garden",
         "ping": {
             "active": true,
             "intervalMinutes": 5
@@ -46,9 +46,9 @@
         },
         "web": {
             "active": true,
-            "intervalMinutes": 5,
-            "url": "/",
-            "match": "Solarui",
+            "intervalMinutes": 10,
+            "url": "/index.html",
+            "match": "",
             "https": false
         }
     }
