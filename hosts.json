@@ -33,9 +33,9 @@
         }
     },
     {
-        "address": "garden.home",
+        "address": "solar.home",
         "id": 1,
-        "description": "My garden",
+        "description": "solar shed",
         "ping": {
             "active": true,
             "intervalMinutes": 5
