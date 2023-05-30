@@ -65,10 +65,10 @@ def scheduler():
     host = hosts.getHost(nextHostToTest)
     hostTests = hosts.getHostTests(nextHostToTest)
     if "ping" in host:
-        web = host["ping"]
+        ping = host["ping"]
         # We have ping info
-        if web["active"]:
-            if hostTests["lastPing"] + (web["intervalMinutes"] * 60) < time.time():
+        if ping["active"]:
+            if hostTests["lastPing"] + (ping["intervalMinutes"] * 60) < time.time():
                 hostTests["lastPing"] = time.time()
                 # We are due to run the ping test
                 pingResult = uping.ping(host["address"], size=16)
@@ -79,10 +79,10 @@ def scheduler():
                           pingResult[1], " size:", pingResult[2])
 
     if "bing" in host:
-        web = host["bing"]
+        bing = host["bing"]
         # We have ping info
-        if web["active"]:
-            if hostTests["lastBing"] + (web["intervalMinutes"] * 60) < time.time():
+        if bing["active"]:
+            if hostTests["lastBing"] + (bing["intervalMinutes"] * 60) < time.time():
                 hostTests["lastBing"] = time.time()
                 # We are due to run the bing test
                 bingResult = ubing.bing(
@@ -117,7 +117,7 @@ def scheduler():
     # Update the last update times
     hosts.updateHostTests(hostTests)
     print("hostsTests:", hosts.hostsTests)
-    time.sleep(2)
+    time.sleep(30)
 
 
 if __name__ == '__main__':
