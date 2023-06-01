@@ -58,18 +58,5 @@
             "match": "GardenUI",
             "https": false
         }
-    },
-    {
-        "address": "192.168.1.128",
-        "id": 1,
-        "description": "Linux running tc",
-        "ping": {
-            "active": true,
-            "intervalMinutes": 5
-        },
-        "bing": {
-            "active": true,
-            "intervalMinutes": 5
-        }
     }
 ]

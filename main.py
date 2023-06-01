@@ -116,8 +116,8 @@ def scheduler():
                               webResult[1], " status:", webResult[2])
     # Update the last update times
     hosts.updateHostTests(hostTests)
-    print("hostsTests:", hosts.hostsTests)
-    time.sleep(30)
+    # print("hostsTests:", hosts.hostsTests)
+    time.sleep(3)
 
 
 if __name__ == '__main__':

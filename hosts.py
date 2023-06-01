@@ -16,7 +16,7 @@ class Hosts:
         if shared.hasSDCard:
             self.HOSTS_FILE = "/sd" + self.HOSTS_FILE
         self.getHosts()
-        self.buildHostTests()
+        self.buildHostsTests()
 
     def file_or_dir_exists(self, filename):
         try:
@@ -28,7 +28,7 @@ class Hosts:
     #  ***************************
     # hostsTests specific routines
 
-    def buildHostTests(self):
+    def buildHostsTests(self):
         # Build a new host tests array based on hosts data
         self.hostsTests = []
         for host in self.hosts:
