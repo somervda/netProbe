@@ -6,12 +6,14 @@ import uping
 import ubing
 import uwebPage
 
+
 import network
 import machine
 import ntptime
 
 from netconfig import NetConfig
 from hosts import Hosts
+from netLogger import NetLogger
 
 import shared
 
@@ -128,13 +130,16 @@ if __name__ == '__main__':
         os.mount(sd, '/sd')
     except OSError:
         shared.hasSDCard = False
-    connect()
-    print(net_if.ifconfig())
-    hosts = Hosts()
+    # connect()
+    # print(net_if.ifconfig())
+    # hosts = Hosts()
 
-    for loop in range(30):
-        print("   * ", loop, " *")
-        scheduler()
+    # for loop in range(30):
+    #     print("   * ", loop, " *")
+    #     scheduler()
 
-    print("")
-    print("")
+    # print("")
+    # print("")
+    netLogger=NetLogger()
+    print(netLogger.getNDFileName(1))
+
