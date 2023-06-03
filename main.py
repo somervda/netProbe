@@ -141,10 +141,10 @@ if __name__ == '__main__':
     hosts = Hosts()
     netLogger = NetLogger()
 
-    for loop in range(2000):
-        print("   * ", loop, " *")
-        scheduler()
-    # print(netLogger.getHistory(739022128, 2, "ping"))
+    # for loop in range(2000):
+    #     print("   * ", loop, " *")
+    #     scheduler()
+    print(netLogger.getHistory(739022128, 2, "ping"))
 
     print("")
     print("")

@@ -83,7 +83,7 @@ class NetLogger:
         entries = []
         valueTotal = 0
         valueCount = 0
-        lastSummaryTime = 0
+        lastSummaryTime = startTimestamp
 
         begin = startTimestamp
         end = time.time()
@@ -119,9 +119,10 @@ class NetLogger:
                             else:
                                 # Summarize data
                                 valueTotal += int(lineValues[1])
-                                hoursTotal += 1
+                                valueCount += 1
                         if lastSummaryTime != 0:
                             timestamp = int(lineValues[0])
+                            print(summaryType, (timestamp - lastSummaryTime),valueCount)
                             if (summaryType == "H" and (timestamp - lastSummaryTime) > 60*60) \
                                     or (summaryType == "D" and (timestamp - lastSummaryTime) > 60*60*24):
                                 # Add a summary entry
