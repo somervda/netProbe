@@ -18,6 +18,7 @@ from netLogger import NetLogger
 import shared
 
 hosts: Hosts
+netLogger: NetLogger
 
 
 def connect():
@@ -62,9 +63,11 @@ def connect():
 
 def scheduler():
     global hosts
+    global netLogger
     # Perform scheduling of tests on next host
     nextHostToTest = hosts.findNextHostToTest()
     host = hosts.getHost(nextHostToTest)
+    print(host["address"])
     hostTests = hosts.getHostTests(nextHostToTest)
     if "ping" in host:
         ping = host["ping"]
@@ -75,10 +78,12 @@ def scheduler():
                 # We are due to run the ping test
                 pingResult = uping.ping(host["address"], size=16)
                 if pingResult == None:
-                    print("Ping failed to ", host["address"])
+                    netLoggerRecord = {
+                        "id": host["id"], "type": "ping",  "success": False}
                 else:
-                    print("Ping ", host["address"], "rtl:", pingResult[0], " ttl:",
-                          pingResult[1], " size:", pingResult[2])
+                    netLoggerRecord = {
+                        "id": host["id"], "type": "ping", "rtl": int(pingResult[0]), "success": True}
+                netLogger.writeloggerRecord(netLoggerRecord)
 
     if "bing" in host:
         bing = host["bing"]
@@ -89,11 +94,10 @@ def scheduler():
                 # We are due to run the bing test
                 bingResult = ubing.bing(
                     host["address"], maxSize=1400, quiet=True)
-                if bingResult == None:
-                    print("Bing failed to ", host["address"])
-                else:
-                    print("Bing ", host["address"], " bps:", bingResult[0], " rtl:",
-                          bingResult[1],)
+                netLoggerRecord = {
+                    "id": host["id"], "type": "bing", "bps": bingResult[0], "rtl":  int(bingResult[1]),  "success": True}
+                netLogger.writeloggerRecord(netLoggerRecord)
+
     if "web" in host:
         web = host["web"]
         # We have ping info
@@ -112,14 +116,16 @@ def scheduler():
                     webResult = uwebPage.webPage(
                         target, web["match"], quiet=True)
                     if webResult == None:
-                        print("Web failed to ", target)
+                        netLoggerRecord = {
+                            "id": host["id"], "type": "web",  "success": False}
                     else:
-                        print("Web ", target, " rtl:", webResult[0], " match:",
-                              webResult[1], " status:", webResult[2])
+                        netLoggerRecord = {"id": host["id"], "type": "web", "ms": int(webResult[0]),
+                                           "match": webResult[1], "status": webResult[2], "success": True}
+                    netLogger.writeloggerRecord(netLoggerRecord)
     # Update the last update times
     hosts.updateHostTests(hostTests)
-    # print("hostsTests:", hosts.hostsTests)
-    time.sleep(3)
+    print("sleeping...")
+    time.sleep(30)
 
 
 if __name__ == '__main__':
@@ -130,16 +136,15 @@ if __name__ == '__main__':
         os.mount(sd, '/sd')
     except OSError:
         shared.hasSDCard = False
-    # connect()
-    # print(net_if.ifconfig())
-    # hosts = Hosts()
+    connect()
+    print(net_if.ifconfig())
+    hosts = Hosts()
+    netLogger = NetLogger()
 
-    # for loop in range(30):
-    #     print("   * ", loop, " *")
-    #     scheduler()
+    for loop in range(2000):
+        print("   * ", loop, " *")
+        scheduler()
+    # print(netLogger.getHistory(739022128, 2, "ping"))
 
-    # print("")
-    # print("")
-    netLogger=NetLogger()
-    print(netLogger.getNDFileName(1))
-
+    print("")
+    print("")
