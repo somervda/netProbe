@@ -1,4 +1,3 @@
-import json
 import os
 import time
 import shared
@@ -11,7 +10,7 @@ class NetLogger:
 
     def __init__(self):
         if shared.hasSDCard:
-            self.FILE_PREFIX = "/sd/logger/"
+            self.FILE_PREFIX = "/sd" + self.FILE_PREFIX
 
     def file_or_dir_exists(self, filename):
         try:
@@ -22,6 +21,7 @@ class NetLogger:
 
     def getNDFileName(self, id, type):
         # return the file name to be used for todays netdata records for the host id
+        # e.g. nd20230602bing002.tab
         now = time.localtime()
         NDFileName = self.FILE_PREFIX + \
             "nd{}{:0>2}{:0>2}{}{:0>3}.tab".format(
@@ -70,6 +70,27 @@ class NetLogger:
         with open(netDataLoggerFileName, "a") as netDataLoggerFile:
             netDataLoggerFile.write(loggerLine)
 
+    def getStartOfDay(self, timestamp):
+        startOfDay = timestamp - \
+            (time.localtime(timestamp)[3] * 60 * 60) - \
+            (time.localtime(timestamp)[4] * 60) + 1
+        return startOfDay
+
+    def getStartOfHour(self, timestamp):
+        startOfHour = timestamp - \
+            (time.localtime(timestamp)[4] * 60) - \
+            (time.localtime(timestamp)[5]) + 1
+        return startOfHour
+
+    def calcStatistics(self, values):
+        mean = sum(values)/len(values)
+        count = len(values)
+        values.sort()
+        P50Index = int(count * 0.5)
+        P10Index = int(count * 0.1)
+        P90Index = int(count * 0.9)
+        return ({"value": mean, "p50": values[P50Index], "p90": values[P90Index], "p10": values[P10Index]})
+
     def getHistory(self, startTimestamp, id, type):
         # summarize based on hours of data selected
         # 12 hours no summary
@@ -77,74 +98,71 @@ class NetLogger:
         # >72 hours do daily summary
 
         # by default report on rtl for ping, bps for bing and ms for web
+        # if summarizing also show average value, and the 20,50,80the percental values
 
         gc.collect()
 
+        SECONDS_IN_HOUR = 60*60
+        SECONDS_IN_DAY = 60*60*24
+
         entries = []
-        valueTotal = 0
-        valueCount = 0
-        lastSummaryTime = startTimestamp
+        values = []
+        lastSummaryTime = 0
 
         begin = startTimestamp
         end = time.time()
 
-        hoursHistory = (end-begin)/(60*60)
+        hoursHistory = (end-begin)/SECONDS_IN_HOUR
         summaryType = "X"  # x = no summary
         if hoursHistory > 12 and hoursHistory < 72:
             summaryType = "H"
+            lastSummaryTime = self.getStartOfHour(startTimestamp)
         if hoursHistory > 72:
             summaryType = "D"
+            lastSummaryTime = self.getStartOfDay(startTimestamp)
 
-        startOfBeginDay = begin - \
-            (time.localtime(begin)[3] * 60 * 60) - \
-            (time.localtime(begin)[4] * 60) + 1
-        for fileDate in range(startOfBeginDay, end, (60*60*24)):
+        # Read all the logger files in time range for the host and test type
+        for fileDate in range(self.getStartOfDay(startTimestamp), end, SECONDS_IN_DAY):
             localFileDate = time.localtime(fileDate)
             logName = self.FILE_PREFIX + "nd{}{:0>2}{:0>2}{}{:0>3}.tab".format(
                 localFileDate[0], localFileDate[1], localFileDate[2], type, id)
-            print("getHistory logName:", logName, localFileDate)
             if self.file_or_dir_exists(logName):
                 with open(logName, "r") as loggingFile:
                     # filter out entries that are not in required range
                     loggingFileLines = loggingFile.readlines()
                     for line in loggingFileLines:
                         lineValues = line.split("\t")
-                        print(begin, end, int(
-                            lineValues[0]), int(lineValues[1]))
-                        if int(lineValues[0]) >= begin and int(lineValues[0]) <= end:
-                            if summaryType == "X":
-                                # Build dictionary item for current hour
-                                entries.append(
-                                    {"timeStamp": int(lineValues[0]), "value": int(lineValues[1])})
+                        # Output a summary?
+                        timestamp = int(lineValues[0])
+                        value = int(lineValues[1])
+                        if (summaryType == "H" and (timestamp - lastSummaryTime) > SECONDS_IN_HOUR) \
+                                or (summaryType == "D" and (timestamp - lastSummaryTime) > SECONDS_IN_DAY):
+                            # Add a summary entry
+                            if len(values) > 0:
+                                entry = self.calcStatistics(values)
+                                entry["timestamp"] = lastSummaryTime
+                                entries.append(entry)
+                            # Reset summary data
+                            values = []
+                            # Calculate the start of the next summary time
+                            if summaryType == "H":
+                                # set to beginning or the hour
+                                lastSummaryTime = self.getStartOfHour(
+                                    timestamp)
                             else:
-                                # Summarize data
-                                valueTotal += int(lineValues[1])
-                                valueCount += 1
-                        if lastSummaryTime != 0:
-                            timestamp = int(lineValues[0])
-                            print(summaryType, (timestamp - lastSummaryTime),valueCount)
-                            if (summaryType == "H" and (timestamp - lastSummaryTime) > 60*60) \
-                                    or (summaryType == "D" and (timestamp - lastSummaryTime) > 60*60*24):
-                                # Add a summary entry
-                                if valueCount > 0:
-                                    entries.append(
-                                        {"timeStamp":  lastSummaryTime, "value": valueTotal/valueCount})
-                                valueCount = 0
-                                valueTotal = 0
-                                # Calculate the start of the next summary time
-                                if summaryType == "H":
-                                    # set to beginning or the hour
-                                    hourBegin = timestamp - \
-                                        (time.localtime(timestamp)[3] * 60 * 60) - \
-                                        (time.localtime(timestamp)[4] * 60) - \
-                                        time.localtime(timestamp)[5] + 1
-                                    lastSummaryTime = hourBegin
-                                else:
-                                    # set to beginning or the day
-                                    dayBegin = timestamp - \
-                                        (time.localtime(timestamp)[3] * 60 * 60) - \
-                                        (time.localtime(timestamp)[4] * 60) + 1
-                                    lastSummaryTime = dayBegin
+                                # set to beginning or the day
+                                lastSummaryTime = self.getStartOfDay(timestamp)
 
-        # print("entries:", entries)
+                        if timestamp >= begin and timestamp <= end and value > 0:
+                            if summaryType == "X":
+                                entries.append(
+                                    {"timeStamp": timestamp, "value": value})
+                            else:
+                                # Store data values for summarization
+                                values.append(value)
+        # If we have data still to be summarized for partial hour or day
+        if len(values) > 0:
+            entry = self.calcStatistics(values)
+            entry["timestamp"] = lastSummaryTime
+            entries.append(entry)
         return entries

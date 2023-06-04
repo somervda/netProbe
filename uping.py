@@ -24,8 +24,14 @@ def checksum(data):
 
 def getRandomString(size):
     import random
+    import gc
+    gc.collect()
     printableCharacters = 'abcdefghijklmnopqrstuvwxyz1234567890ABCBEFHIJKLMNOPQRSTUVWXYZ'
-    return ''.join(random.choice(printableCharacters) for x in range(size))
+    rs = ""
+    for x in range(size):
+        rs += random.choice(printableCharacters)
+    return (rs)
+    # return ''.join(random.choice(printableCharacters) for x in range(size))
 
 
 def ping(host, size=16, timeout=5000, quiet=True):
@@ -78,7 +84,10 @@ def ping(host, size=16, timeout=5000, quiet=True):
     sock = usocket.socket(usocket.AF_INET, usocket.SOCK_RAW, 1)
     sock.setblocking(0)
     sock.settimeout(timeout/1000)
-    addr = usocket.getaddrinfo(host, 1)[0][-1][0]  # ip address
+    try:
+        addr = usocket.getaddrinfo(host, 1)[0][-1][0]  # ip address
+    except:
+        return None
     sock.connect((addr, 1))
     t_elapsed = -1
     finish = False
@@ -93,7 +102,7 @@ def ping(host, size=16, timeout=5000, quiet=True):
         # Successful packet send, Wait for ping to respond
         while True:
             try:
-                resp = sock.recv(1512)
+                resp = sock.recv(60)
             except Exception as err:
                 not quiet and print("uping recv error", err)
                 break

@@ -4,6 +4,7 @@
 
 import uping as uping
 import utime
+import uasyncio
 
 
 def getLowestPing(host, samples, size, timeout=5000, quiet=False):
