@@ -86,7 +86,9 @@ def ping(host, size=16, timeout=5000, quiet=True):
     sock.settimeout(timeout/1000)
     try:
         addr = usocket.getaddrinfo(host, 1)[0][-1][0]  # ip address
+        # print("addr:", host, addr)
     except:
+        print("addr fail:", host)
         return None
     sock.connect((addr, 1))
     t_elapsed = -1
