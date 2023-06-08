@@ -1,15 +1,16 @@
 from microdot_asyncio import Microdot,  send_file
 import uasyncio
+import uwebPage
 import shared
 import gc
 import os
 import time
 import uping
 import ubing
-import uwebPage
 import network
 import machine
 import ntptime
+import micropython
 
 from appLogger import AppLogger
 from netLogger import NetLogger
@@ -76,7 +77,7 @@ async def scheduler():
             nextHostToTest = hosts.findNextHostToTest()
             host = hosts.getHost(nextHostToTest)
             print(host["address"])
-            print("mem_free", gc.mem_free())
+            print("mem_info", micropython.mem_info())
             gc.collect()
             hostTests = hosts.getHostTests(nextHostToTest)
             if "ping" in host:
@@ -178,6 +179,8 @@ if __name__ == '__main__':
     # Check if we have a SD card plugged in
     gc.collect()
     time.sleep(1)
+    micropython.mem_info()
+
     try:
         sd = machine.SDCard(slot=1, width=1, sck=machine.Pin(
             14), miso=machine.Pin(2), mosi=machine.Pin(15))
