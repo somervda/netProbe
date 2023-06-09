@@ -27,11 +27,11 @@ def getRandomString(size):
     import gc
     gc.collect()
     printableCharacters = 'abcdefghijklmnopqrstuvwxyz1234567890ABCBEFHIJKLMNOPQRSTUVWXYZ'
-    rs = ""
-    for x in range(size):
-        rs += random.choice(printableCharacters)
-    return (rs)
-    # return ''.join(random.choice(printableCharacters) for x in range(size))
+    # rs = ""
+    # for x in range(size):
+    #     rs += random.choice(printableCharacters)
+    # return (rs)
+    return ''.join(random.choice(printableCharacters) for x in range(size))
 
 
 def ping(host, size=16, timeout=5000, quiet=True):
@@ -104,7 +104,7 @@ def ping(host, size=16, timeout=5000, quiet=True):
         # Successful packet send, Wait for ping to respond
         while True:
             try:
-                resp = sock.recv(60)
+                resp = sock.recv(48)
             except Exception as err:
                 not quiet and print("uping recv error", err)
                 break

@@ -90,7 +90,7 @@ class NetLogger:
         P50Index = int(count * 0.5)
         P10Index = int(count * 0.1)
         P90Index = int(count * 0.9)
-        return ({"value": mean, "p50": values[P50Index], "p90": values[P90Index], "p10": values[P10Index]})
+        return ({"v": mean, "p50": values[P50Index], "p90": values[P90Index], "p10": values[P10Index]})
 
     def getHistory(self, startTimestamp, id, type):
         # summarize based on hours of data selected
@@ -115,10 +115,10 @@ class NetLogger:
 
         hoursHistory = (end-begin)/SECONDS_IN_HOUR
         summaryType = "X"  # x = no summary
-        if hoursHistory > 12 and hoursHistory < 72:
+        if hoursHistory > 12 and hoursHistory < 49:
             summaryType = "H"
             lastSummaryTime = self.getStartOfHour(startTimestamp)
-        if hoursHistory > 72:
+        if hoursHistory > 49:
             summaryType = "D"
             lastSummaryTime = self.getStartOfDay(startTimestamp)
 
@@ -142,7 +142,7 @@ class NetLogger:
                                 # Add a summary entry
                                 if len(values) > 0:
                                     entry = self.calcStatistics(values)
-                                    entry["timestamp"] = lastSummaryTime
+                                    entry["ts"] = lastSummaryTime
                                     entries.append(entry)
                                 # Reset summary data
                                 values = []
@@ -159,14 +159,14 @@ class NetLogger:
                             if timestamp >= begin and timestamp <= end and value > 0:
                                 if summaryType == "X":
                                     entries.append(
-                                        {"timeStamp": timestamp, "value": value})
+                                        {"ts": timestamp, "v": value})
                                 else:
                                     # Store data values for summarization
                                     values.append(value)
             # If we have data still to be summarized for partial hour or day
             if len(values) > 0:
                 entry = self.calcStatistics(values)
-                entry["timestamp"] = lastSummaryTime
+                entry["ts"] = lastSummaryTime
                 entries.append(entry)
             return entries
         except Exception as e:

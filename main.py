@@ -10,7 +10,7 @@ import ubing
 import network
 import machine
 import ntptime
-import micropython
+# import micropython
 
 from appLogger import AppLogger
 from netLogger import NetLogger
@@ -79,7 +79,7 @@ async def scheduler():
             host = hosts.getHost(nextHostToTest)
             print(host["address"])
             gc.collect()
-            print("mem_info", micropython.mem_info())
+            print("mem_free", gc.mem_free())
             hostTests = hosts.getHostTests(nextHostToTest)
             if "ping" in host:
                 ping = host["ping"]
@@ -153,20 +153,23 @@ async def scheduler():
 @app.route('/history/<start>/<id>/<type>')
 def getHistory(request, start, id, type):
     netLogger = NetLogger()
-    return netLogger.getHistory(int(start), int(id), type), 200,  {'Access-Control-Allow-Origin': '*'}
+    gc.collect()
+    # Need to find more ways yo
+    # print(micropython.mem_info(True))
+    return netLogger.getHistory(int(start), int(id), type), 200
 
 # Get list of errors
 @app.route('/log')
 def getSysLog(request):
     appLogger = AppLogger()
-    return appLogger.getLog(), 200,  {'Access-Control-Allow-Origin': '*', 'Content-Type': 'text/html'}
+    return appLogger.getLog(), 200,  {'Content-Type': 'text/html'}
 
 
 @app.route('/log/clear')
 def clearSysLog(request):
     appLogger = AppLogger()
     appLogger.clearLog()
-    return "", 200,  {'Access-Control-Allow-Origin': '*', 'Content-Type': 'text/html'}
+    return "", 200,  {'Content-Type': 'text/html'}
 
 
 @app.before_request
@@ -177,11 +180,18 @@ def func(request):
     print("skipTestTimestamp", skipTestTimestamp)
 
 
+@app.after_request
+def func(request, response):
+    # ...
+    response.headers.update({"Access-Control-Allow-Origin": "*"})
+    return response
+
+
 if __name__ == '__main__':
     # Check if we have a SD card plugged in
     gc.collect()
     time.sleep(1)
-    micropython.mem_info()
+    # micropython.mem_info()
 
     try:
         sd = machine.SDCard(slot=1, width=1, sck=machine.Pin(
