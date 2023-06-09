@@ -71,14 +71,15 @@ async def scheduler():
     global hosts
     global netLogger
     global skipTestTimestamp
+    await uasyncio.sleep(0.1)
     # Perform scheduling of tests on next host
     while True:
         if skipTestTimestamp < time.time():
             nextHostToTest = hosts.findNextHostToTest()
             host = hosts.getHost(nextHostToTest)
             print(host["address"])
-            print("mem_info", micropython.mem_info())
             gc.collect()
+            print("mem_info", micropython.mem_info())
             hostTests = hosts.getHostTests(nextHostToTest)
             if "ping" in host:
                 ping = host["ping"]
@@ -95,7 +96,7 @@ async def scheduler():
                             netLoggerRecord = {
                                 "id": host["id"], "type": "ping", "rtl": int(pingResult[0]), "success": True}
                         netLogger.writeloggerRecord(netLoggerRecord)
-            print("mem_free", gc.mem_free())
+            # print("mem_free", gc.mem_free())
             if "bing" in host:
                 bing = host["bing"]
                 # We have ping info
@@ -103,10 +104,11 @@ async def scheduler():
                     if hostTests["lastBing"] + (bing["intervalMinutes"] * 60) < time.time():
                         hostTests["lastBing"] = time.time()
                         # We are due to run the bing test (Reducing samples and timeout to speed it up)
+                        print("Bing Start")
                         bingtimer = time.time()
-                        bingResult = ubing.bing(
+                        bingResult = await ubing.bing(
                             host["address"], maxSize=1400, quiet=True)
-                        print("bing duration:", time.time()-bingtimer)
+                        print("Bing End:", time.time()-bingtimer)
                         if bingResult[0] == -1:
                             netLoggerRecord = {
                                 "id": host["id"], "type": "bing", "bps": bingResult[0], "rtl":  int(bingResult[1]),  "success": False}
@@ -114,7 +116,7 @@ async def scheduler():
                             netLoggerRecord = {
                                 "id": host["id"], "type": "bing", "bps": bingResult[0], "rtl":  int(bingResult[1]),  "success": True}
                         netLogger.writeloggerRecord(netLoggerRecord)
-            print("mem_free", gc.mem_free())
+            # print("mem_free", gc.mem_free())
             if "web" in host:
                 web = host["web"]
                 # We have ping info

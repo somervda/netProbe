@@ -2,6 +2,7 @@ import os
 import time
 import shared
 import gc
+from appLogger import AppLogger
 
 
 class NetLogger:
@@ -122,47 +123,53 @@ class NetLogger:
             lastSummaryTime = self.getStartOfDay(startTimestamp)
 
         # Read all the logger files in time range for the host and test type
-        for fileDate in range(self.getStartOfDay(startTimestamp), end, SECONDS_IN_DAY):
-            localFileDate = time.localtime(fileDate)
-            logName = self.FILE_PREFIX + "nd{}{:0>2}{:0>2}{}{:0>3}.tab".format(
-                localFileDate[0], localFileDate[1], localFileDate[2], type, id)
-            if self.file_or_dir_exists(logName):
-                with open(logName, "r") as loggingFile:
-                    # filter out entries that are not in required range
-                    loggingFileLines = loggingFile.readlines()
-                    for line in loggingFileLines:
-                        lineValues = line.split("\t")
-                        # Output a summary?
-                        timestamp = int(lineValues[0])
-                        value = int(lineValues[1])
-                        if (summaryType == "H" and (timestamp - lastSummaryTime) > SECONDS_IN_HOUR) \
-                                or (summaryType == "D" and (timestamp - lastSummaryTime) > SECONDS_IN_DAY):
-                            # Add a summary entry
-                            if len(values) > 0:
-                                entry = self.calcStatistics(values)
-                                entry["timestamp"] = lastSummaryTime
-                                entries.append(entry)
-                            # Reset summary data
-                            values = []
-                            # Calculate the start of the next summary time
-                            if summaryType == "H":
-                                # set to beginning or the hour
-                                lastSummaryTime = self.getStartOfHour(
-                                    timestamp)
-                            else:
-                                # set to beginning or the day
-                                lastSummaryTime = self.getStartOfDay(timestamp)
+        try:
+            for fileDate in range(self.getStartOfDay(startTimestamp), end, SECONDS_IN_DAY):
+                localFileDate = time.localtime(fileDate)
+                logName = self.FILE_PREFIX + "nd{}{:0>2}{:0>2}{}{:0>3}.tab".format(
+                    localFileDate[0], localFileDate[1], localFileDate[2], type, id)
+                if self.file_or_dir_exists(logName):
+                    with open(logName, "r") as loggingFile:
+                        # filter out entries that are not in required range
+                        loggingFileLines = loggingFile.readlines()
+                        for line in loggingFileLines:
+                            lineValues = line.split("\t")
+                            # Output a summary?
+                            timestamp = int(lineValues[0])
+                            value = int(lineValues[1])
+                            if (summaryType == "H" and (timestamp - lastSummaryTime) > SECONDS_IN_HOUR) \
+                                    or (summaryType == "D" and (timestamp - lastSummaryTime) > SECONDS_IN_DAY):
+                                # Add a summary entry
+                                if len(values) > 0:
+                                    entry = self.calcStatistics(values)
+                                    entry["timestamp"] = lastSummaryTime
+                                    entries.append(entry)
+                                # Reset summary data
+                                values = []
+                                # Calculate the start of the next summary time
+                                if summaryType == "H":
+                                    # set to beginning or the hour
+                                    lastSummaryTime = self.getStartOfHour(
+                                        timestamp)
+                                else:
+                                    # set to beginning or the day
+                                    lastSummaryTime = self.getStartOfDay(
+                                        timestamp)
 
-                        if timestamp >= begin and timestamp <= end and value > 0:
-                            if summaryType == "X":
-                                entries.append(
-                                    {"timeStamp": timestamp, "value": value})
-                            else:
-                                # Store data values for summarization
-                                values.append(value)
-        # If we have data still to be summarized for partial hour or day
-        if len(values) > 0:
-            entry = self.calcStatistics(values)
-            entry["timestamp"] = lastSummaryTime
-            entries.append(entry)
-        return entries
+                            if timestamp >= begin and timestamp <= end and value > 0:
+                                if summaryType == "X":
+                                    entries.append(
+                                        {"timeStamp": timestamp, "value": value})
+                                else:
+                                    # Store data values for summarization
+                                    values.append(value)
+            # If we have data still to be summarized for partial hour or day
+            if len(values) > 0:
+                entry = self.calcStatistics(values)
+                entry["timestamp"] = lastSummaryTime
+                entries.append(entry)
+            return entries
+        except Exception as e:
+            appLogger = AppLogger()
+            appLogger.writeException(e)
+            return entries

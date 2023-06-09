@@ -4,9 +4,10 @@
 
 import uping as uping
 import utime
+import uasyncio
 
 
-def getLowestPing(host, samples, size, timeout=5000, quiet=False):
+async def getLowestPing(host, samples, size, timeout=5000, quiet=False):
     # Make a list containing the ping results for each of the ping samples
     pingResults = []
     failCnt = 0
@@ -20,7 +21,7 @@ def getLowestPing(host, samples, size, timeout=5000, quiet=False):
             pingResults.append(pingResult)
         not quiet and print(
             "getLowestPing host %s size %u sample# %u result: " % (host, size, x), pingResult)
-        utime.sleep_ms(25)
+        await uasyncio.sleep(0.5)
     # Review results for number of successful pings and get the lowest latency
     minPing = 9999
 
@@ -30,7 +31,7 @@ def getLowestPing(host, samples, size, timeout=5000, quiet=False):
     return minPing
 
 
-def bing(host, samples=3, maxSize=1460, timeout=5000, quiet=True, loopBackAdjustment=True):
+async def bing(host, samples=3, maxSize=1460, timeout=5000, quiet=True, loopBackAdjustment=True):
     # perform required number of ping samples to the host using 16byte and maxsize packets
     # also get esp32 overhead time for the same pings to loopback (no network times)
     # calculate and return bandwidth (bps) and latency (ms) based on the ping samples
@@ -43,12 +44,12 @@ def bing(host, samples=3, maxSize=1460, timeout=5000, quiet=True, loopBackAdjust
     # return the bps value of -1 if failed bing, second value represents error
 
     # Get latency
-    latency = getLowestPing(host, samples, 16, timeout, quiet)
+    latency = await getLowestPing(host, samples, 16, timeout, quiet)
     if (latency == None):
         not quiet and print("getlowestPing failed: latency == None")
         return (-1, -10)
     if(loopBackAdjustment):
-        loopback16 = getLowestPing(loopback, samples, 16, timeout, quiet)
+        loopback16 = await getLowestPing(loopback, samples, 16, timeout, quiet)
         if (loopback16 == None):
             not quiet and print("getlowestPing failed: loopback16 == None")
             return (-1, -11)
@@ -56,23 +57,22 @@ def bing(host, samples=3, maxSize=1460, timeout=5000, quiet=True, loopBackAdjust
             latency = 0
         else:
             latency -= loopback16
-
     # Get Lowest loopback latencies
     if(loopBackAdjustment):
-        loopback26 = getLowestPing(loopback, samples, 26, timeout, quiet)
+        loopback26 = await getLowestPing(loopback, samples, 26, timeout, quiet)
         if (loopback26 == None):
             not quiet and print("getlowestPing failed: loopback26 == None")
             return (-1, -12)
-        loopbackMax = getLowestPing(loopback, samples, maxSize, timeout, quiet)
+        loopbackMax = await getLowestPing(loopback, samples, maxSize, timeout, quiet)
         if (loopbackMax == None):
             not quiet and print("getlowestPing failed: loopbackMax == None")
             return (-1, -13)
     # Get Lowest target latencies
-    target26 = getLowestPing(host, samples, 26, timeout, quiet)
+    target26 = await getLowestPing(host, samples, 26, timeout, quiet)
     if (target26 == None):
         not quiet and print("getlowestPing failed: target26 == None")
         return (-1, -14)
-    targetMax = getLowestPing(host, samples, maxSize, timeout, quiet)
+    targetMax = await getLowestPing(host, samples, maxSize, timeout, quiet)
     if (targetMax == None):
         not quiet and print("getlowestPing failed: targetMax == None")
         return (-1, -15)
