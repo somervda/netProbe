@@ -29,9 +29,9 @@ class NetLogger:
                 now[0], now[1], now[2], type, id)
         return NDFileName
 
-    def loggerLineBuilder(self, netLoggerRecord):
+    def loggerLineBuilder(self, netLoggerRecord, quiet=True):
         loggerLine = ""
-        print(netLoggerRecord)
+        not quiet and print(netLoggerRecord)
         type = netLoggerRecord["type"]
         if type == "ping":
             if netLoggerRecord["success"]:
@@ -49,10 +49,10 @@ class NetLogger:
             else:
                 loggerLine = "{}\t{}\t{}\t{}\n".format(
                     time.time(), -1, False, -1)
-        print(loggerLine)
+        not quiet and print(loggerLine)
         return loggerLine
 
-    def writeloggerRecord(self, netLoggerRecord):
+    def writeloggerRecord(self, netLoggerRecord, quiet=True):
         # Write a new network test results data record to
         # the appropriate netData file.
 
@@ -65,7 +65,7 @@ class NetLogger:
         if not (netLoggerRecord["type"] == "ping" or netLoggerRecord["type"] == "bing" or netLoggerRecord["type"] == "web"):
             raise Exception(
                 "invalid netLoggerRecord type, must be ping, bing or web")
-        loggerLine = self.loggerLineBuilder(netLoggerRecord)
+        loggerLine = self.loggerLineBuilder(netLoggerRecord, quiet)
         netDataLoggerFileName = self.getNDFileName(
             netLoggerRecord["id"], netLoggerRecord["type"])
         with open(netDataLoggerFileName, "a") as netDataLoggerFile:

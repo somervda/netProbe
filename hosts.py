@@ -33,7 +33,7 @@ class Hosts:
         self.hostsTests = []
         for host in self.hosts:
             hostTests = {"id": host["id"],
-                         "lastPing": 0, "lastBing": 0, "lastWeb": 0}
+                         "lastPing": 0, "pingRTL": 0, "pingSuccess": False, "lastBing": 0, "bingBPS": 0, "bingRTL": 0, "bingSuccess": False, "lastWeb": 0, "webMS": 0, "webMatch": False, "webSuccess": False}
             self.hostsTests.append(hostTests)
 
     def getHostTests(self, id):
@@ -127,3 +127,12 @@ class Hosts:
     def writeHosts(self):
         with open(self.HOSTS_FILE, "w") as hostsFile:
             hostsFile.write(json.dumps(self.hosts))
+
+    def getHostStatus(self):
+        #     # Return merged version of the hosts with their most recent test results
+        hosts = []
+        for host in self.hosts:
+            hostTests = self.getHostTests(host["id"])
+            hostTests["address"] = host["address"]
+            hosts.append(hostTests)
+        return hosts

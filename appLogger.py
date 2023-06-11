@@ -5,10 +5,9 @@ import sys
 import shared
 
 
-APPLOGFILE = "applog.txt"
-
-
 class AppLogger:
+    APPLOGFILE = "/applog.txt"
+
     def __init__(self):
         if shared.hasSDCard:
             self.APPLOGFILE = "/sd" + self.APPLOGFILE
@@ -21,7 +20,7 @@ class AppLogger:
         return formatedTime
 
     def writeLogLine(self, logLine):
-        with open(APPLOGFILE, "a") as logFile:
+        with open(self.APPLOGFILE, "a") as logFile:
             logFile.write(self.getTimeStamp() + " " +
                           logLine.replace("\n", "\t") + "\n")
 
@@ -32,9 +31,9 @@ class AppLogger:
         self.writeLogLine(s.getvalue())
 
     def getLog(self):
-        with open(APPLOGFILE, "r") as logFile:
+        with open(self.APPLOGFILE, "r") as logFile:
             return logFile.read().replace("\n", "<br>")
 
     def clearLog(self):
-        with open(APPLOGFILE, "w") as logFile:
+        with open(self.APPLOGFILE, "w") as logFile:
             logFile.write("")
