@@ -32,9 +32,13 @@ class Hosts:
         # Build a new host tests array based on hosts data
         self.hostsTests = []
         for host in self.hosts:
-            hostTests = {"id": host["id"],
-                         "lastPing": 0, "pingRTL": 0, "pingSuccess": False, "lastBing": 0, "bingBPS": 0, "bingRTL": 0, "bingSuccess": False, "lastWeb": 0, "webMS": 0, "webMatch": False, "webSuccess": False}
-            self.hostsTests.append(hostTests)
+            self.addHostTests(host["id"])
+
+    def addHostTests(self, id):
+        host = self.getHost(id)
+        hostTests = {"id": host["id"],
+                     "lastPing": 0, "pingRTL": 0, "pingSuccess": False, "lastBing": 0, "bingBPS": 0, "bingRTL": 0, "bingSuccess": False, "lastWeb": 0, "webMS": 0, "webMatch": False, "webSuccess": False}
+        self.hostsTests.append(hostTests)
 
     def getHostTests(self, id):
         for hostTests in self.hostsTests:
@@ -101,19 +105,25 @@ class Hosts:
             if host["id"] == updatedHost["id"]:
                 self.hosts.remove(host)
                 self.hosts.append(updatedHost)
-                self.setMaxId()
+                # self.setMaxId()
                 self.writeHosts()
+        return int(host["id"])
 
-    def removeHost(self, id):
+    def deleteHost(self, id):
+        print("deleteHost:", id)
         for host in self.hosts:
-            if host["id"] == id:
+            print("Finding host", host["id"], id,  int(host["id"]) == int(id))
+            if int(host["id"]) == int(id):
+                print("deleteHost found")
                 self.hosts.remove(host)
                 self.setMaxId()
                 self.writeHosts()
         # Also update hostsTests
         for hostTests in self.hostsTests:
-            if hostTests["id"] == id:
+            if int(hostTests["id"]) == int(id):
+                print("deleteHostTest found")
                 self.hostsTests.remove(hostTests)
+        return id
 
     def addHost(self, host):
         host["id"] = self.maxId + 1
@@ -121,8 +131,8 @@ class Hosts:
         self.setMaxId()
         self.writeHosts()
         # Also update hostsTests
-        self.hostsTests.append(
-            {"id": self.maxId, "lastPing": 0, "lastBing": 0, "lastWeb": 0})
+        self.addHostTests(host["id"])
+        return int(host["id"])
 
     def writeHosts(self):
         with open(self.HOSTS_FILE, "w") as hostsFile:

@@ -1,6 +1,7 @@
 from microdot_asyncio import Microdot,  send_file
 import uasyncio
 import uwebPage
+from microdot_cors import CORS
 import shared
 import gc
 import os
@@ -22,6 +23,7 @@ hosts: Hosts
 netLogger: NetLogger
 
 app = Microdot()
+CORS(app, allowed_origins="*", allow_credentials=True)
 # If we start seeing web service activity then this gets set to a minute into the future
 # and no network testing is performed until the time is in the past. This should make the
 # web site more responsive
@@ -203,6 +205,30 @@ def getHost(request, id):
     gc.collect()
     return hosts.getHost(int(id))
 
+# Add host
+@app.post('/host/add')
+def addHost(request):
+    gc.collect()
+    print('/host/add', request.body)
+    newHostId = hosts.addHost(request.json)
+    return str(newHostId), 200
+
+# Update host
+@app.post('/host/update')
+def updateHost(request):
+    gc.collect()
+    print('/host/update', request.body)
+    updatedHostId = hosts.updateHost(request.json)
+    return str(updatedHostId), 200
+
+# Delete Host
+@app.delete('/host/<id>')
+def deleteHost(request, id):
+    gc.collect()
+    print('/host/delete', id)
+    deletedHostId = hosts.deleteHost(id)
+    return str(deletedHostId), 200
+
 # Get list of errors
 @app.route('/log')
 def getSysLog(request):
@@ -221,15 +247,31 @@ def clearSysLog(request):
 def func(request):
     global skipTestTimestamp
     # Stop tests for seconds if someone is using the web interface
-    skipTestTimestamp = time.time() + 60
+    skipTestTimestamp = time.time() + 10
     print("skipTestTimestamp", skipTestTimestamp)
 
 
 @app.after_request
 def func(request, response):
     # ...
+    print("after_request")
     response.headers.update({"Access-Control-Allow-Origin": "*"})
     return response
+
+#  All other request return static files from garden_ui folder
+@app.route('/')
+def index(request):
+    return send_file('net-probe-ui/index.html')
+
+
+@app.route('/<path:path>')
+def static(request, path):
+    if '..' in path:
+        # directory traversal is not allowed
+        # print("directory traversal is not allowed " + path)
+        return 'Not found', 404
+    # print(path)
+    return send_file('net-probe-ui/' + path)
 
 
 if __name__ == '__main__':
@@ -244,13 +286,20 @@ if __name__ == '__main__':
         os.mount(sd, '/sd')
     except OSError:
         shared.hasSDCard = False
-    connect()
-    print(net_if.ifconfig())
+    appLogger = AppLogger()
+
+    try:
+        connect()
+        print(net_if.ifconfig())
+    except Exception as e:
+        appLogger.writeException(e)
+        print("Connect exception, restarting in 5 seconds...")
+        time.sleep(5)
+        machine.reset()
+    appLogger.writeLogLine("*** Restart ***")
+
     hosts = Hosts()
     netLogger = NetLogger()
-
-    appLogger = AppLogger()
-    appLogger.writeLogLine("*** Restart ***")
     # Fire up background co-routine first
     uasyncio.create_task(scheduler(quiet=False))
     try:

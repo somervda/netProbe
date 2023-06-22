@@ -131,9 +131,10 @@ class NetLogger:
                 if self.file_or_dir_exists(logName):
                     with open(logName, "r") as loggingFile:
                         # filter out entries that are not in required range
-                        loggingFileLines = loggingFile.readlines()
-                        for line in loggingFileLines:
-                            lineValues = line.split("\t")
+                        # loggingFileLines = loggingFile.readlines()
+                        logline = loggingFile.readline()
+                        while logline:
+                            lineValues = logline.split("\t")
                             # Output a summary?
                             timestamp = int(lineValues[0])
                             value = int(lineValues[1])
@@ -163,6 +164,7 @@ class NetLogger:
                                 else:
                                     # Store data values for summarization
                                     values.append(value)
+                            logline = loggingFile.readline()
             # If we have data still to be summarized for partial hour or day
             if len(values) > 0:
                 entry = self.calcStatistics(values)
