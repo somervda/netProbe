@@ -195,6 +195,7 @@ def getSystemStatus(request):
 @app.route('/history/<start>/<id>/<type>')
 def getHistory(request, start, id, type):
     # netLogger = NetLogger()
+    print("history", start, id, type)
     gc.collect()
     return netLogger.getHistory(int(start), int(id), type), 200
 
@@ -261,6 +262,7 @@ def func(request, response):
 #  All other request return static files from garden_ui folder
 @app.route('/')
 def index(request):
+    print("net-probe-ui /")
     return send_file('net-probe-ui/index.html')
 
 
@@ -270,7 +272,7 @@ def static(request, path):
         # directory traversal is not allowed
         # print("directory traversal is not allowed " + path)
         return 'Not found', 404
-    # print(path)
+    print("net-probe-ui", path)
     return send_file('net-probe-ui/' + path)
 
 
