@@ -12,6 +12,9 @@ class AppLogger:
         if shared.hasSDCard:
             self.APPLOGFILE = "/sd" + self.APPLOGFILE
 
+    def getFileName(self):
+        return self.APPLOGFILE
+
     def getTimeStamp(self):
         formatedTime = ""
         now = time.localtime()

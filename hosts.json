@@ -1,45 +1,5 @@
 [
     {
-        "address": "lupincorp.com",
-        "id": 4,
-        "description": "Davids main site",
-        "ping": {
-            "active": true,
-            "intervalMinutes": 5
-        },
-        "bing": {
-            "active": true,
-            "intervalMinutes": 5
-        },
-        "web": {
-            "active": true,
-            "intervalMinutes": 5,
-            "url": "/",
-            "match": "Lupincorp",
-            "https": true
-        }
-    },
-    {
-        "address": "myhost.nz",
-        "id": 2,
-        "description": "A host in new zealand",
-        "ping": {
-            "active": true,
-            "intervalMinutes": 5
-        },
-        "bing": {
-            "active": true,
-            "intervalMinutes": 10
-        },
-        "web": {
-            "active": true,
-            "intervalMinutes": 5,
-            "url": "/",
-            "match": "New Zealand",
-            "https": true
-        }
-    },
-    {
         "address": "garden.home",
         "id": 3,
         "description": "My automated system in the garden",
