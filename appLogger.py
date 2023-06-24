@@ -30,6 +30,12 @@ class AppLogger:
         sys.print_exception(e, s)
         self.writeLogLine(s.getvalue())
 
+    def printException(self, e):
+        # Print application exception object
+        s = io.StringIO()
+        sys.print_exception(e, s)
+        print(s.getvalue())
+
     def getLog(self):
         with open(self.APPLOGFILE, "r") as logFile:
             return logFile.read().replace("\n", "<br>")
