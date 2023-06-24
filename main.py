@@ -77,97 +77,105 @@ async def scheduler(quiet=True):
     lastSleepTime = time.time()
     await uasyncio.sleep(0.1)
     # Perform scheduling of tests on next host
-    while True:
-        if skipTestTimestamp < time.time():
-            gc.collect()
-            nextHostToTest = hosts.findNextHostToTest()
-            host = hosts.getHost(nextHostToTest)
-            not quiet and print(
-                host["address"], "   mem_free:", gc.mem_free(), end="")
-            hostTests = hosts.getHostTests(nextHostToTest)
-            if "ping" in host:
-                not quiet and print(".", end="")
-                ping = host["ping"]
-                hostTests["pingActive"] = ping["active"]
-                # We have ping info
-                if ping["active"]:
-                    if hostTests["lastPing"] + (ping["intervalMinutes"] * 60) < time.time():
-                        hostTests["lastPing"] = time.time()
-                        # We are due to run the ping test
-                        pingResult = uping.ping(host["address"], size=16)
-                        if pingResult == None:
-                            hostTests["pingSuccess"] = False
-                            # Leave last good pingRTL in table
-                            netLoggerRecord = {
-                                "id": host["id"], "type": "ping",  "success": False}
-                        else:
-                            hostTests["pingSuccess"] = True
-                            hostTests["pingRTL"] = int(pingResult[0])
-                            netLoggerRecord = {
-                                "id": host["id"], "type": "ping", "rtl": int(pingResult[0]), "success": True}
-                        netLogger.writeloggerRecord(netLoggerRecord)
-            # print("mem_free", gc.mem_free())
-            if "bing" in host:
-                not quiet and print(".", end="")
-                bing = host["bing"]
-                hostTests["bingActive"] = bing["active"]
-                # We have ping info
-                if bing["active"]:
-                    if hostTests["lastBing"] + (bing["intervalMinutes"] * 60) < time.time():
-                        hostTests["lastBing"] = time.time()
-                        # We are due to run the bing test (Reducing samples and timeout to speed it up)
-                        bingResult = await ubing.bing(
-                            host["address"], maxSize=1400)
-                        if bingResult[0] == -1:
-                            hostTests["bingSuccess"] = False
-                            netLoggerRecord = {
-                                "id": host["id"], "type": "bing", "bps": bingResult[0], "rtl":  int(bingResult[1]),  "success": False}
-                        else:
-                            hostTests["bingSuccess"] = True
-                            hostTests["bingBPS"] = int(bingResult[0])
-                            hostTests["bingRTL"] = int(bingResult[1])
-                            netLoggerRecord = {
-                                "id": host["id"], "type": "bing", "bps": bingResult[0], "rtl":  int(bingResult[1]),  "success": True}
-                        netLogger.writeloggerRecord(netLoggerRecord)
-            if "web" in host:
-                not quiet and print(".", end="")
-                web = host["web"]
-                hostTests["webActive"] = web["active"]
-                # We have ping info
-                if web["active"]:
-                    if hostTests["lastWeb"] + (web["intervalMinutes"] * 60) < time.time():
-                        hostTests["lastWeb"] = time.time()
-                        # We are due to run the web test
-                        # Test host responds before trying web request, otherwise it ties things up for 60 sec
-                        pingResult = uping.ping(host["address"], size=16)
-                        if pingResult != None:
-                            if web["https"]:
-                                target = "https://"
-                            else:
-                                target = "http://"
-                            target += host["address"] + web["url"]
-                            webResult = uwebPage.webPage(
-                                target, web["match"], quiet=True)
-                            if webResult == None:
-                                hostTests["webSuccess"] = False
+    try:
+        while True:
+            if skipTestTimestamp < time.time():
+                gc.collect()
+                nextHostToTest = hosts.findNextHostToTest()
+                host = hosts.getHost(nextHostToTest)
+                not quiet and print(
+                    host["address"], "   mem_free:", gc.mem_free(), end="")
+                hostTests = hosts.getHostTests(nextHostToTest)
+                if "ping" in host:
+                    not quiet and print(".", end="")
+                    ping = host["ping"]
+                    hostTests["pingActive"] = ping["active"]
+                    # We have ping info
+                    if ping["active"]:
+                        if hostTests["lastPing"] + (ping["intervalMinutes"] * 60) < time.time():
+                            hostTests["lastPing"] = time.time()
+                            # We are due to run the ping test
+                            pingResult = uping.ping(host["address"], size=16)
+                            if pingResult == None:
+                                hostTests["pingSuccess"] = False
+                                # Leave last good pingRTL in table
                                 netLoggerRecord = {
-                                    "id": host["id"], "type": "web",  "success": False}
+                                    "id": host["id"], "type": "ping",  "success": False}
                             else:
-                                hostTests["webSuccess"] = True
-                                hostTests["webMS"] = int(webResult[0])
-                                hostTests["webMatch"] = webResult[1]
-                                netLoggerRecord = {"id": host["id"], "type": "web", "ms": int(webResult[0]),
-                                                   "match": webResult[1], "status": webResult[2], "success": True}
+                                hostTests["pingSuccess"] = True
+                                hostTests["pingRTL"] = int(pingResult[0])
+                                netLoggerRecord = {
+                                    "id": host["id"], "type": "ping", "rtl": int(pingResult[0]), "success": True}
                             netLogger.writeloggerRecord(netLoggerRecord)
-            # Update the last update times
-            hosts.updateHostTests(hostTests)
-        not quiet and print("")
+                # print("mem_free", gc.mem_free())
+                if "bing" in host:
+                    not quiet and print(".", end="")
+                    bing = host["bing"]
+                    hostTests["bingActive"] = bing["active"]
+                    # We have ping info
+                    if bing["active"]:
+                        if hostTests["lastBing"] + (bing["intervalMinutes"] * 60) < time.time():
+                            hostTests["lastBing"] = time.time()
+                            # We are due to run the bing test (Reducing samples and timeout to speed it up)
+                            bingResult = await ubing.bing(
+                                host["address"], maxSize=1400)
+                            if bingResult[0] == -1:
+                                hostTests["bingSuccess"] = False
+                                netLoggerRecord = {
+                                    "id": host["id"], "type": "bing", "bps": bingResult[0], "rtl":  int(bingResult[1]),  "success": False}
+                            else:
+                                hostTests["bingSuccess"] = True
+                                hostTests["bingBPS"] = int(bingResult[0])
+                                hostTests["bingRTL"] = int(bingResult[1])
+                                netLoggerRecord = {
+                                    "id": host["id"], "type": "bing", "bps": bingResult[0], "rtl":  int(bingResult[1]),  "success": True}
+                            netLogger.writeloggerRecord(netLoggerRecord)
+                if "web" in host:
+                    not quiet and print(".", end="")
+                    web = host["web"]
+                    hostTests["webActive"] = web["active"]
+                    # We have ping info
+                    if web["active"]:
+                        if hostTests["lastWeb"] + (web["intervalMinutes"] * 60) < time.time():
+                            hostTests["lastWeb"] = time.time()
+                            # We are due to run the web test
+                            # Test host responds before trying web request, otherwise it ties things up for 60 sec
+                            pingResult = uping.ping(host["address"], size=16)
+                            if pingResult != None:
+                                if web["https"]:
+                                    target = "https://"
+                                else:
+                                    target = "http://"
+                                target += host["address"] + web["url"]
+                                webResult = uwebPage.webPage(
+                                    target, web["match"], quiet=True)
+                                if webResult == None:
+                                    hostTests["webSuccess"] = False
+                                    netLoggerRecord = {
+                                        "id": host["id"], "type": "web",  "success": False}
+                                else:
+                                    hostTests["webSuccess"] = True
+                                    hostTests["webMS"] = int(webResult[0])
+                                    hostTests["webMatch"] = webResult[1]
+                                    netLoggerRecord = {"id": host["id"], "type": "web", "ms": int(webResult[0]),
+                                                       "match": webResult[1], "status": webResult[2], "success": True}
+                                netLogger.writeloggerRecord(netLoggerRecord)
+                # Update the last update times
+                hosts.updateHostTests(hostTests)
+            not quiet and print("")
 
-        # if time.localtime(lastSleepTime)[2] != time.localtime()[2]:
-        #     # Its a new day - reboot (Keep heap happy!)
-        #     machine.reset()
-        # lastSleepTime = time.time()
-        await uasyncio.sleep(10)
+            # if time.localtime(lastSleepTime)[2] != time.localtime()[2]:
+            #     # Its a new day - reboot (Keep heap happy!)
+            #     machine.reset()
+            # lastSleepTime = time.time()
+            await uasyncio.sleep(10)
+    except Exception as e:
+        appLogger.printException(e)
+        appLogger.writeException(e)
+        print("Scheduler exception, restarting in 5 seconds...")
+        time.sleep(5)
+        machine.reset()
+
 
 # MicroDot Web Services
 
